@@ -44,8 +44,8 @@ function App() {
         particles.current.push({
           x: Math.random() * canvas.width,
           y: Math.random() * canvas.height,
-          vx: (Math.random() - 0.5) * (isMobile.current ? 3 : 3.5),
-          vy: (Math.random() - 0.5) * (isMobile.current ? 3 : 3.5)
+          vx: (Math.random() - 0.5) * 3,
+          vy: (Math.random() - 0.5) * 3
         })
       }
     }
@@ -67,13 +67,13 @@ function App() {
       
       lastFrameTime = timestamp
 
-      // Hapus latar belakang dengan tingkat transparansi yang sesuai
-      ctx.fillStyle = isMobile.current ? 'rgba(0, 0, 0, 0.2)' : 'rgba(0, 0, 0, 0.1)'
+      // Hapus latar belakang dengan tingkat transparansi yang sama untuk semua device
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.15)'
       ctx.fillRect(0, 0, canvas.width, canvas.height)
 
       particles.current.forEach(particle => {
-        // Update particle position dengan kecepatan sesuai device
-        const speedMultiplier = isMobile.current ? 1.2 : 1.5
+        // Update particle position dengan kecepatan yang sama untuk semua device
+        const speedMultiplier = 1.2
         particle.x += particle.vx * speedMultiplier
         particle.y += particle.vy * speedMultiplier
 
@@ -93,7 +93,7 @@ function App() {
             Math.pow(particle.y - otherParticle.y, 2)
           )
 
-          const connectionDistance = isMobile.current ? 110 : 120
+          const connectionDistance = 130
           if (particleDistance < connectionDistance) {
             ctx.beginPath()
             ctx.moveTo(particle.x, particle.y)
@@ -103,17 +103,17 @@ function App() {
           }
         })
 
-        // Magnetic effect towards mouse - stronger on mobile for faster response
-        const magnetDistance = isMobile.current ? 220 : 200;
+        // Magnetic effect towards mouse - sama untuk semua device
+        const magnetDistance = 220;
         if (distance < magnetDistance) {
           const force = (magnetDistance - distance) / magnetDistance;
-          const magnetStrength = isMobile.current ? 0.35 : 0.4;
+          const magnetStrength = 0.35;
           particle.vx += (dx / distance) * force * magnetStrength;
           particle.vy += (dy / distance) * force * magnetStrength;
         }
 
-        // Limit velocity - higher on mobile for faster movement
-        const maxSpeed = isMobile.current ? 5 : 6
+        // Limit velocity - sama untuk semua device
+        const maxSpeed = 5
         const speed = Math.sqrt(particle.vx * particle.vx + particle.vy * particle.vy)
         if (speed > maxSpeed) {
           particle.vx = (particle.vx / speed) * maxSpeed
@@ -122,7 +122,7 @@ function App() {
 
         // Draw particle
         ctx.beginPath()
-        ctx.arc(particle.x, particle.y, isMobile.current ? 2 : 2.5, 0, Math.PI * 2)
+        ctx.arc(particle.x, particle.y, 2, 0, Math.PI * 2)
         ctx.fillStyle = 'white'
         ctx.fill()
       })
@@ -136,23 +136,21 @@ function App() {
         y: e.clientY
       }
       
-      // Tambahkan efek langsung untuk desktop
-      if (!isMobile.current) {
-        const x = e.clientX
-        const y = e.clientY
+      // Efek langsung untuk semua device
+      const x = e.clientX
+      const y = e.clientY
+      
+      particles.current.forEach(particle => {
+        const dx = x - particle.x - 24
+        const dy = y - particle.y - 24
+        const distance = Math.sqrt(dx * dx + dy * dy)
         
-        particles.current.forEach(particle => {
-          const dx = x - particle.x - 24
-          const dy = y - particle.y - 24
-          const distance = Math.sqrt(dx * dx + dy * dy)
-          
-          if (distance < 150) {
-            const force = (150 - distance) / 150
-            particle.vx += (dx / distance) * force * 0.3
-            particle.vy += (dy / distance) * force * 0.3
-          }
-        })
-      }
+        if (distance < 120) {
+          const force = (120 - distance) / 120
+          particle.vx += (dx / distance) * force * 0.5
+          particle.vy += (dy / distance) * force * 0.5
+        }
+      })
     }
 
     const handleTouchStart = (e: TouchEvent) => {
@@ -165,55 +163,51 @@ function App() {
           y: touch.clientY
         }
         
-        // Efek yang sama seperti touchMove
-        if (isMobile.current) {
-          const x = touch.clientX
-          const y = touch.clientY
+        // Efek yang sama seperti mouse move
+        const x = touch.clientX
+        const y = touch.clientY
+        
+        particles.current.forEach(particle => {
+          const dx = x - particle.x - 24
+          const dy = y - particle.y - 24
+          const distance = Math.sqrt(dx * dx + dy * dy)
           
-          particles.current.forEach(particle => {
-            const dx = x - particle.x - 24
-            const dy = y - particle.y - 24
-            const distance = Math.sqrt(dx * dx + dy * dy)
-            
-            if (distance < 120) {
-              const force = (120 - distance) / 120
-              particle.vx += (dx / distance) * force * 0.5
-              particle.vy += (dy / distance) * force * 0.5
-            }
-          })
-        }
+          if (distance < 120) {
+            const force = (120 - distance) / 120
+            particle.vx += (dx / distance) * force * 0.5
+            particle.vy += (dy / distance) * force * 0.5
+          }
+        })
       }
     }
 
     const handleTouchMove = (e: TouchEvent) => {
       e.preventDefault()
       if (e.touches.length > 0) {
-        // Langsung update posisi tanpa delay pada mobile
+        // Langsung update posisi
         const touch = e.touches[0]
         mousePosition.current = {
           x: touch.clientX,
           y: touch.clientY
         }
         
-        // Tambahkan percepatan ekstra ke partikel terdekat untuk efek magnet lebih cepat
-        if (isMobile.current) {
-          const x = touch.clientX
-          const y = touch.clientY
+        // Efek yang sama seperti mouse move
+        const x = touch.clientX
+        const y = touch.clientY
+        
+        // Cari partikel yang paling dekat dengan touch
+        particles.current.forEach(particle => {
+          const dx = x - particle.x - 24
+          const dy = y - particle.y - 24
+          const distance = Math.sqrt(dx * dx + dy * dy)
           
-          // Cari partikel yang paling dekat dengan touch
-          particles.current.forEach(particle => {
-            const dx = x - particle.x - 24
-            const dy = y - particle.y - 24
-            const distance = Math.sqrt(dx * dx + dy * dy)
-            
-            if (distance < 120) {
-              // Berikan dorongan ekstra ke partikel terdekat
-              const force = (120 - distance) / 120
-              particle.vx += (dx / distance) * force * 0.5
-              particle.vy += (dy / distance) * force * 0.5
-            }
-          })
-        }
+          if (distance < 120) {
+            // Berikan dorongan ekstra ke partikel terdekat
+            const force = (120 - distance) / 120
+            particle.vx += (dx / distance) * force * 0.5
+            particle.vy += (dy / distance) * force * 0.5
+          }
+        })
       }
     }
 
@@ -251,17 +245,17 @@ function App() {
 
   return (
     <div className="relative min-h-screen bg-black flex flex-col items-center justify-center">
-      <h1 className="absolute top-4 left-4 sm:top-8 sm:left-8 text-2xl sm:text-4xl text-white font-bold z-10">
-        Magnet
+      <h1 className="absolute top-1 left-4 sm:top-8 sm:left-8 text-2xl sm:text-4xl text-white font-bold z-10">
+        Magnet Particles
       </h1>
-      <div className="relative w-[calc(90%-(48px*0.9))] h-[calc(90vh-(48px*0.9))] sm:w-[calc(80%-(48px*0.8))] sm:h-[calc(80vh-(48px*0.8))] m-2 sm:m-2 rounded-xl overflow-hidden border border-white/20">
+      <div className="relative w-[calc(90%-(20px*0.9))] h-[calc(90vh-(48px*0.9))] sm:w-[calc(80%-(48px*0.8))] sm:h-[calc(80vh-(48px*0.8))] top-2 m-2 sm:m-2 rounded-xl overflow-hidden border border-white/20">
         <canvas
           ref={canvasRef}
           className="absolute inset-0 cursor-none bg-black"
         />
       </div>
       <div className="text-center">
-        <p className="text-white/60 text-sm sm:text-base px-6 py-2 bg-black/60 backdrop-blur-sm inline-block rounded-full shadow-lg border border-white/10">
+        <p className="text-white/60 text-sm sm:text-base px-6 py-2 bg-black/60 backdrop-blur-sm inline-block ">
           {isDeviceMobile ? "tap and move the screen to move the particles" : "move the cursor to move the particles"}
         </p>
       </div>
