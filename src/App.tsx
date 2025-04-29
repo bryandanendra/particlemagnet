@@ -7,6 +7,23 @@ function App() {
   const animationFrameId = useRef<number>()
   const isTouching = useRef(false)
   const isMobile = useRef(false)
+  const [isDeviceMobile, setIsDeviceMobile] = React.useState(false)
+
+  // Deteksi mobile di luar useEffect
+  React.useEffect(() => {
+    const checkMobile = () => {
+      const mobileStatus = window.innerWidth <= 768
+      isMobile.current = mobileStatus
+      setIsDeviceMobile(mobileStatus)
+    }
+    
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    
+    return () => {
+      window.removeEventListener('resize', checkMobile)
+    }
+  }, [])
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -15,12 +32,7 @@ function App() {
     const ctx = canvas.getContext('2d')
     if (!ctx) return
 
-    const checkMobile = () => {
-      isMobile.current = window.innerWidth <= 768
-    }
-
     const resizeCanvas = () => {
-      checkMobile()
       canvas.width = (window.innerWidth - 48) * (isMobile.current ? 0.9 : 0.8)
       canvas.height = (window.innerHeight - 48) * (isMobile.current ? 0.9 : 0.8)
     }
@@ -238,15 +250,20 @@ function App() {
   }, [])
 
   return (
-    <div className="relative min-h-screen bg-black flex items-center justify-center">
+    <div className="relative min-h-screen bg-black flex flex-col items-center justify-center">
       <h1 className="absolute top-4 left-4 sm:top-8 sm:left-8 text-2xl sm:text-4xl text-white font-bold z-10">
         Magnet
       </h1>
-      <div className="relative w-[calc(90%-(48px*0.9))] h-[calc(90vh-(48px*0.9))] sm:w-[calc(80%-(48px*0.8))] sm:h-[calc(80vh-(48px*0.8))] m-4 sm:m-6 rounded-xl overflow-hidden border border-white/20">
+      <div className="relative w-[calc(90%-(48px*0.9))] h-[calc(90vh-(48px*0.9))] sm:w-[calc(80%-(48px*0.8))] sm:h-[calc(80vh-(48px*0.8))] m-2 sm:m-2 rounded-xl overflow-hidden border border-white/20">
         <canvas
           ref={canvasRef}
           className="absolute inset-0 cursor-none bg-black"
         />
+      </div>
+      <div className="text-center">
+        <p className="text-white/60 text-sm sm:text-base px-6 py-2 bg-black/60 backdrop-blur-sm inline-block rounded-full shadow-lg border border-white/10">
+          {isDeviceMobile ? "tap and move the screen to move the particles" : "move the cursor to move the particles"}
+        </p>
       </div>
     </div>
   )
