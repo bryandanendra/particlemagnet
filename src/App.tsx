@@ -86,11 +86,25 @@ function App() {
       lastFrameTime = timestamp
 
       // Hapus latar belakang dengan tingkat transparansi yang berbeda berdasarkan ukuran perangkat
-      // Transparansi lebih tinggi pada desktop untuk mengurangi efek shadow
-      ctx.fillStyle = window.innerWidth > 800 ? 'rgba(0, 0, 0, 0.3)' : 'rgba(0, 0, 0, 0.15)'
+      // Transparansi disesuaikan berdasarkan jumlah partikel
+      let backgroundOpacity = 0.15 // mobile default
+      
+      if (window.innerWidth > 1200) {
+        // Large desktop dengan banyak partikel membutuhkan transparansi lebih tinggi
+        backgroundOpacity = 0.35
+      } else if (window.innerWidth > 800) {
+        // iPad dan desktop kecil
+        backgroundOpacity = 0.3
+      }
+      
+      ctx.fillStyle = `rgba(0, 0, 0, ${backgroundOpacity})`
       ctx.fillRect(0, 0, canvas.width, canvas.height)
 
-      particles.current.forEach(particle => {
+      // Optimasi rendering untuk perangkat dengan banyak partikel
+      // Pada desktop dengan banyak partikel, tidak perlu menggambar semua koneksi
+      const skipFactor = window.innerWidth > 1200 ? 2 : 1 // Skip some connection calculations on large screens
+      
+      particles.current.forEach((particle, particleIndex) => {
         // Update particle position dengan kecepatan berbeda berdasarkan ukuran layar
         const speedMultiplier = window.innerWidth > 800 ? 1.8 : 1.2
         particle.x += particle.vx * speedMultiplier
@@ -106,14 +120,28 @@ function App() {
         const distance = Math.sqrt(dx * dx + dy * dy)
 
         // Draw connections between particles
-        particles.current.forEach(otherParticle => {
+        // Gunakan skipFactor untuk mengurangi jumlah koneksi yang digambar
+        particles.current.forEach((otherParticle, otherIndex) => {
+          // Skip beberapa kalkulasi koneksi untuk performa lebih baik pada layar besar
+          if (skipFactor > 1 && (particleIndex % skipFactor !== 0 && otherIndex % skipFactor !== 0)) {
+            return;
+          }
+          
           const particleDistance = Math.sqrt(
             Math.pow(particle.x - otherParticle.x, 2) + 
             Math.pow(particle.y - otherParticle.y, 2)
           )
 
-          // Adjust connection distance based on device
-          const connectionDistance = window.innerWidth > 800 ? 150 : 130
+          // Adjust connection distance based on device and screen size
+          let connectionDistance = 130
+          
+          if (window.innerWidth > 1200) {
+            // Large desktop - kurangi jarak koneksi untuk menghindari terlalu banyak garis
+            connectionDistance = 120
+          } else if (window.innerWidth > 800) {
+            // iPad dan desktop kecil
+            connectionDistance = 140
+          }
           
           if (particleDistance < connectionDistance) {
             ctx.beginPath()
@@ -121,7 +149,10 @@ function App() {
             ctx.lineTo(otherParticle.x, otherParticle.y)
             // Make lines thinner on desktop for sharper appearance
             ctx.lineWidth = window.innerWidth > 800 ? 0.6 : 1
-            ctx.strokeStyle = `rgba(255, 255, 255, ${1 - particleDistance / connectionDistance})`
+            
+            // Sesuaikan opacity berdasarkan jarak dan ukuran layar
+            const opacityFactor = window.innerWidth > 1200 ? 0.85 : 1
+            ctx.strokeStyle = `rgba(255, 255, 255, ${(1 - particleDistance / connectionDistance) * opacityFactor})`
             ctx.stroke()
           }
         })
@@ -136,7 +167,7 @@ function App() {
         }
 
         // Limit velocity - sesuaikan dengan ukuran layar
-        const maxSpeed = window.innerWidth > 800 ? 7 : 5
+        const maxSpeed = window.innerWidth > 800 ? 4 : 5
         const speed = Math.sqrt(particle.vx * particle.vx + particle.vy * particle.vy)
         if (speed > maxSpeed) {
           particle.vx = (particle.vx / speed) * maxSpeed
@@ -147,7 +178,7 @@ function App() {
         ctx.beginPath()
         
         // Size adjustment based on device type
-        const particleSize = window.innerWidth > 800 ? 1.5 : 2
+        const particleSize = window.innerWidth > 800 ? 2 : 2
         
         ctx.arc(particle.x, particle.y, particleSize, 0, Math.PI * 2)
         ctx.fillStyle = 'white'
