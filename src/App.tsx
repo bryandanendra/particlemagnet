@@ -45,13 +45,25 @@ function App() {
 
     const createParticles = () => {
       particles.current = []
-      const numParticles = isMobile.current ? 35 : 50
+      // Tingkatkan jumlah partikel untuk desktop dan iPad
+      const screenWidth = window.innerWidth
+      let numParticles = 35 // Default untuk mobile
+      
+      if (screenWidth > 1200) {
+        // Large desktop
+        numParticles = 100
+      } else if (screenWidth > 800) {
+        // iPad dan desktop kecil
+        numParticles = 80
+      }
+      
+      const velocityMultiplier = window.innerWidth > 800 ? 4.2 : 3
       for (let i = 0; i < numParticles; i++) {
         particles.current.push({
           x: Math.random() * canvas.width,
           y: Math.random() * canvas.height,
-          vx: (Math.random() - 0.5) * 3,
-          vy: (Math.random() - 0.5) * 3
+          vx: (Math.random() - 0.5) * velocityMultiplier,
+          vy: (Math.random() - 0.5) * velocityMultiplier
         })
       }
     }
@@ -73,13 +85,14 @@ function App() {
       
       lastFrameTime = timestamp
 
-      // Hapus latar belakang dengan tingkat transparansi yang sama untuk semua device
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.15)'
+      // Hapus latar belakang dengan tingkat transparansi yang berbeda berdasarkan ukuran perangkat
+      // Transparansi lebih tinggi pada desktop untuk mengurangi efek shadow
+      ctx.fillStyle = window.innerWidth > 800 ? 'rgba(0, 0, 0, 0.3)' : 'rgba(0, 0, 0, 0.15)'
       ctx.fillRect(0, 0, canvas.width, canvas.height)
 
       particles.current.forEach(particle => {
-        // Update particle position dengan kecepatan yang sama untuk semua device
-        const speedMultiplier = 1.2
+        // Update particle position dengan kecepatan berbeda berdasarkan ukuran layar
+        const speedMultiplier = window.innerWidth > 800 ? 1.8 : 1.2
         particle.x += particle.vx * speedMultiplier
         particle.y += particle.vy * speedMultiplier
 
@@ -99,11 +112,15 @@ function App() {
             Math.pow(particle.y - otherParticle.y, 2)
           )
 
-          const connectionDistance = 130
+          // Adjust connection distance based on device
+          const connectionDistance = window.innerWidth > 800 ? 150 : 130
+          
           if (particleDistance < connectionDistance) {
             ctx.beginPath()
             ctx.moveTo(particle.x, particle.y)
             ctx.lineTo(otherParticle.x, otherParticle.y)
+            // Make lines thinner on desktop for sharper appearance
+            ctx.lineWidth = window.innerWidth > 800 ? 0.6 : 1
             ctx.strokeStyle = `rgba(255, 255, 255, ${1 - particleDistance / connectionDistance})`
             ctx.stroke()
           }
@@ -113,24 +130,40 @@ function App() {
         const magnetDistance = 220;
         if (distance < magnetDistance) {
           const force = (magnetDistance - distance) / magnetDistance;
-          const magnetStrength = 0.35;
+          const magnetStrength = window.innerWidth > 800 ? 0.45 : 0.35;
           particle.vx += (dx / distance) * force * magnetStrength;
           particle.vy += (dy / distance) * force * magnetStrength;
         }
 
-        // Limit velocity - sama untuk semua device
-        const maxSpeed = 5
+        // Limit velocity - sesuaikan dengan ukuran layar
+        const maxSpeed = window.innerWidth > 800 ? 7 : 5
         const speed = Math.sqrt(particle.vx * particle.vx + particle.vy * particle.vy)
         if (speed > maxSpeed) {
           particle.vx = (particle.vx / speed) * maxSpeed
           particle.vy = (particle.vy / speed) * maxSpeed
         }
 
-        // Draw particle
+        // Draw particle with improved rendering for desktop
         ctx.beginPath()
-        ctx.arc(particle.x, particle.y, 2, 0, Math.PI * 2)
+        
+        // Size adjustment based on device type
+        const particleSize = window.innerWidth > 800 ? 1.5 : 2
+        
+        ctx.arc(particle.x, particle.y, particleSize, 0, Math.PI * 2)
         ctx.fillStyle = 'white'
+        
+        // Use sharper shadow for desktop
+        if (window.innerWidth > 800) {
+          ctx.shadowColor = 'rgba(255, 255, 255, 0.7)'
+          ctx.shadowBlur = 3
+        }
+        
         ctx.fill()
+        
+        // Reset shadow to avoid affecting other elements
+        if (window.innerWidth > 800) {
+          ctx.shadowBlur = 0
+        }
       })
 
       animationFrameId.current = requestAnimationFrame(animate)
@@ -153,8 +186,9 @@ function App() {
         
         if (distance < 120) {
           const force = (120 - distance) / 120
-          particle.vx += (dx / distance) * force * 0.5
-          particle.vy += (dy / distance) * force * 0.5
+          const forceMultiplier = window.innerWidth > 800 ? 0.7 : 0.5
+          particle.vx += (dx / distance) * force * forceMultiplier
+          particle.vy += (dy / distance) * force * forceMultiplier
         }
       })
     }
@@ -180,8 +214,9 @@ function App() {
           
           if (distance < 120) {
             const force = (120 - distance) / 120
-            particle.vx += (dx / distance) * force * 0.5
-            particle.vy += (dy / distance) * force * 0.5
+            const forceMultiplier = window.innerWidth > 800 ? 0.7 : 0.5
+            particle.vx += (dx / distance) * force * forceMultiplier
+            particle.vy += (dy / distance) * force * forceMultiplier
           }
         })
       }
@@ -210,8 +245,9 @@ function App() {
           if (distance < 120) {
             // Berikan dorongan ekstra ke partikel terdekat
             const force = (120 - distance) / 120
-            particle.vx += (dx / distance) * force * 0.5
-            particle.vy += (dy / distance) * force * 0.5
+            const forceMultiplier = window.innerWidth > 800 ? 0.7 : 0.5
+            particle.vx += (dx / distance) * force * forceMultiplier
+            particle.vy += (dy / distance) * force * forceMultiplier
           }
         })
       }
