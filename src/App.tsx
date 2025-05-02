@@ -33,8 +33,14 @@ function App() {
     if (!ctx) return
 
     const resizeCanvas = () => {
-      canvas.width = (window.innerWidth - 48) * (isMobile.current ? 0.9 : 0.8)
-      canvas.height = (window.innerHeight - 48) * (isMobile.current ? 0.9 : 0.8)
+      const container = canvas.parentElement
+      if (container) {
+        canvas.width = container.clientWidth
+        canvas.height = container.clientHeight
+      } else {
+        canvas.width = (window.innerWidth - 48) * (isMobile.current ? 0.9 : 0.8)
+        canvas.height = (window.innerHeight - 48) * (isMobile.current ? 0.9 : 0.8) 
+      }
     }
 
     const createParticles = () => {
@@ -248,14 +254,14 @@ function App() {
       <h1 className="absolute top-1 left-4 sm:top-8 sm:left-8 text-2xl sm:text-4xl text-white font-bold z-10">
         Magnet Particles
       </h1>
-      <div className="relative w-[calc(90%-(20px*0.9))] h-[calc(90vh-(48px*0.9))] sm:w-[calc(80%-(48px*0.8))] sm:h-[calc(80vh-(48px*0.8))] top-2 m-2 sm:m-2 rounded-xl overflow-hidden border border-white/20">
+      <div className="relative w-[90%] h-[90vh] sm:w-[80%] sm:h-[80vh] top-2 m-2 sm:m-2 rounded-xl overflow-hidden border border-white/20">
         <canvas
           ref={canvasRef}
-          className="absolute inset-0 cursor-none bg-black"
+          className="absolute inset-0 w-full h-full cursor-none bg-black"
         />
       </div>
       <div className="text-center">
-        <p className="text-white/60 text-sm sm:text-base px-6 py-2 bg-black/60 backdrop-blur-sm inline-block ">
+        <p className="text-white/40 text-sm sm:text-base px-2 py-1 bg-black/60 backdrop-blur-sm inline-block ">
           {isDeviceMobile ? "tap and move the screen to move the particles" : "move the cursor to move the particles"}
         </p>
       </div>
