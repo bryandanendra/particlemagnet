@@ -3,12 +3,17 @@ import React, { useEffect, useRef } from 'react'
 function App() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const mousePosition = useRef({ x: 0, y: 0 })
-  const particles = useRef<{ x: number; y: number; vx: number; vy: number }[]>([])
+  const particles = useRef<{ 
+    x: number; 
+    y: number; 
+    vx: number; 
+    vy: number; 
+  }[]>([])
   const animationFrameId = useRef<number>()
   const isTouching = useRef(false)
   const isMobile = useRef(false)
   const [isDeviceMobile, setIsDeviceMobile] = React.useState(false)
-
+  
   // Deteksi mobile di luar useEffect
   React.useEffect(() => {
     const checkMobile = () => {
@@ -99,7 +104,7 @@ function App() {
       
       ctx.fillStyle = `rgba(0, 0, 0, ${backgroundOpacity})`
       ctx.fillRect(0, 0, canvas.width, canvas.height)
-
+      
       // Optimasi rendering untuk perangkat dengan banyak partikel
       // Pada desktop dengan banyak partikel, tidak perlu menggambar semua koneksi
       const skipFactor = window.innerWidth > 1200 ? 2 : 1 // Skip some connection calculations on large screens
@@ -288,7 +293,7 @@ function App() {
       e.preventDefault()
       isTouching.current = false
     }
-
+    
     window.addEventListener('mousemove', handleMouseMove)
     window.addEventListener('touchstart', handleTouchStart, { passive: false })
     window.addEventListener('touchmove', handleTouchMove, { passive: false })
@@ -318,7 +323,7 @@ function App() {
 
   return (
     <div className="relative min-h-screen bg-black flex flex-col items-center justify-center">
-      <h1 className="absolute top-1 left-4 sm:top-8 sm:left-8 text-2xl sm:text-4xl text-white font-bold z-10">
+      <h1 className="absolute top-1 left-4 sm:top-8 sm:left-8 text-2xl sm:text-4xl text-white/80 font-bold z-10">
         Magnet Particles
       </h1>
       <div className="relative w-[90%] h-[90vh] sm:w-[80%] sm:h-[80vh] top-2 m-2 sm:m-2 rounded-xl overflow-hidden border border-white/20">
@@ -327,9 +332,11 @@ function App() {
           className="absolute inset-0 w-full h-full cursor-none bg-black"
         />
       </div>
-      <div className="text-center">
+      <div className="text-center mt-2">
         <p className="text-white/40 text-sm sm:text-base px-2 py-1 bg-black/60 backdrop-blur-sm inline-block ">
-          {isDeviceMobile ? "tap and move the screen to move the particles" : "move the cursor to move the particles"}
+          {isDeviceMobile 
+            ? "tap and move the screen to move the particles" 
+            : "move the cursor to move the particles"}
         </p>
       </div>
     </div>
