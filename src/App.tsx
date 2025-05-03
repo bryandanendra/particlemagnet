@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react'
 import ShinyText from './ShinyText/ShinyText'
+import Noise from './Noise/Noise'
 
 function App() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -323,21 +324,35 @@ function App() {
   }, [])
 
   return (
-    <div className="relative min-h-screen bg-black flex flex-col items-center justify-center">
-      <div className="absolute top-1 left-4 sm:top-8 sm:left-8 text-2xl sm:text-4xl font-bold z-10">
-        <ShinyText 
-          text="Magnet Particles" 
-          speed={3} 
-          className="text-2xl sm:text-4xl font-bold"
-        />
-      </div>
-      <div className="relative w-[90%] h-[90vh] sm:w-[80%] sm:h-[80vh] top-2 m-2 sm:m-2 rounded-xl overflow-hidden border border-white/20">
+    <div className="relative min-h-screen bg-black flex flex-col items-center justify-center overflow-hidden">
+      {/* Noise effect as background */}
+      <Noise 
+        patternSize={200}
+        patternAlpha={20}
+        patternRefreshInterval={4}
+      />
+      
+      {/* Canvas container */}
+      <div className="relative w-[90%] h-[90vh] sm:w-[80%] sm:h-[80vh] top-2 m-2 sm:m-2 rounded-xl overflow-hidden border border-white/20 z-10">
         <canvas
           ref={canvasRef}
-          className="absolute inset-0 w-full h-full cursor-none bg-black"
+          className="absolute inset-0 w-full h-full cursor-none bg-black/90"
         />
       </div>
-      <div className="text-center mt-2">
+      
+      {/* Title - increased z-index to make it appear above canvas */}
+      <div className="absolute top-1 left-4 sm:top-8 sm:left-8 text-2xl sm:text-4xl font-bold z-30">
+        <div className="px-2 py-1 rounded-md ">
+          <ShinyText 
+            text="Magnet Particles" 
+            speed={3} 
+            className="text-2xl sm:text-4xl font-bold"
+          />
+        </div>
+      </div>
+      
+      {/* Instructions text */}
+      <div className="text-center mt-2 z-10">
         <p className="text-white/40 text-sm sm:text-base px-2 py-1 bg-black/60 backdrop-blur-sm inline-block ">
           {isDeviceMobile 
             ? "tap and move the screen to move the particles" 
