@@ -92,19 +92,8 @@ function App() {
       
       lastFrameTime = timestamp
 
-      // Hapus latar belakang dengan tingkat transparansi yang berbeda berdasarkan ukuran perangkat
-      // Transparansi disesuaikan berdasarkan jumlah partikel
-      let backgroundOpacity = 0.15 // mobile default
-      
-      if (window.innerWidth > 1200) {
-        // Large desktop dengan banyak partikel membutuhkan transparansi lebih tinggi
-        backgroundOpacity = 0.35
-      } else if (window.innerWidth > 800) {
-        // iPad dan desktop kecil
-        backgroundOpacity = 0.3
-      }
-      
-      ctx.fillStyle = `rgba(0, 0, 0, ${backgroundOpacity})`
+      // Selalu isi latar belakang dengan warna hitam solid
+      ctx.fillStyle = 'rgb(0, 0, 0)'
       ctx.fillRect(0, 0, canvas.width, canvas.height)
       
       // Optimasi rendering untuk perangkat dengan banyak partikel
@@ -336,7 +325,7 @@ function App() {
       <div className="relative w-[90%] h-[90vh] sm:w-[80%] sm:h-[80vh] top-2 m-2 sm:m-2 rounded-xl overflow-hidden border border-white/20 z-10">
         <canvas
           ref={canvasRef}
-          className="absolute inset-0 w-full h-full cursor-none bg-black/90"
+          className="absolute inset-0 w-full h-full cursor-none bg-black"
         />
       </div>
       
