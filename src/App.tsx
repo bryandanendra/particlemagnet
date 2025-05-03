@@ -342,7 +342,7 @@ function App() {
       
       {/* Instructions text */}
       <div className="text-center mt-2 z-10">
-        <p className="text-white/40 text-sm sm:text-base px-2 py-1 bg-black/60 backdrop-blur-sm inline-block ">
+        <p className="text-white/40 text-sm sm:text-base px-2 py-1 inline-block ">
           {isDeviceMobile 
             ? "tap and move the screen to move the particles" 
             : "move the cursor to move the particles"}
