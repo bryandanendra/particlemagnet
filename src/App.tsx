@@ -1,6 +1,7 @@
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import ShinyText from './ShinyText/ShinyText'
 import Noise from './Noise/Noise'
+import LightningManager from './Lightning/LightningManager'
 
 function App() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -14,7 +15,9 @@ function App() {
   const animationFrameId = useRef<number>()
   const isTouching = useRef(false)
   const isMobile = useRef(false)
-  const [isDeviceMobile, setIsDeviceMobile] = React.useState(false)
+  const [isDeviceMobile, setIsDeviceMobile] = useState(false)
+  const [currentParticles, setCurrentParticles] = useState<{ x: number; y: number; vx: number; vy: number; }[]>([])
+  const [connectionDistance, setConnectionDistance] = useState(130)
   
   // Deteksi mobile di luar useEffect
   React.useEffect(() => {
@@ -75,6 +78,17 @@ function App() {
       }
     }
 
+    // Set connection distance based on device
+    if (window.innerWidth > 1200) {
+      // Large desktop
+      setConnectionDistance(120)
+    } else if (window.innerWidth > 800) {
+      // iPad dan desktop kecil
+      setConnectionDistance(140)
+    } else {
+      setConnectionDistance(130)
+    }
+
     // Menerapkan optimasi untuk perangkat mobile
     let lastFrameTime = 0
     const targetFPS = 60
@@ -129,26 +143,18 @@ function App() {
           )
 
           // Adjust connection distance based on device and screen size
-          let connectionDistance = 130
+          let lineConnectionDistance = connectionDistance
           
-          if (window.innerWidth > 1200) {
-            // Large desktop - kurangi jarak koneksi untuk menghindari terlalu banyak garis
-            connectionDistance = 120
-          } else if (window.innerWidth > 800) {
-            // iPad dan desktop kecil
-            connectionDistance = 140
-          }
-          
-          if (particleDistance < connectionDistance) {
+          if (particleDistance < lineConnectionDistance) {
             ctx.beginPath()
             ctx.moveTo(particle.x, particle.y)
             ctx.lineTo(otherParticle.x, otherParticle.y)
             // Make lines thinner on desktop for sharper appearance
-            ctx.lineWidth = window.innerWidth > 800 ? 0.6 : 1
+            ctx.lineWidth = window.innerWidth > 800 ? 0.5 : 0.8
             
             // Sesuaikan opacity berdasarkan jarak dan ukuran layar
-            const opacityFactor = window.innerWidth > 1200 ? 0.85 : 1
-            ctx.strokeStyle = `rgba(255, 255, 255, ${(1 - particleDistance / connectionDistance) * opacityFactor})`
+            const opacityFactor = window.innerWidth > 1200 ? 0.5 : 0.6
+            ctx.strokeStyle = `rgba(255, 255, 255, ${(1 - particleDistance / lineConnectionDistance) * opacityFactor * 0.5})`
             ctx.stroke()
           }
         })
@@ -192,6 +198,9 @@ function App() {
           ctx.shadowBlur = 0
         }
       })
+
+      // Update currentParticles state for LightningManager
+      setCurrentParticles([...particles.current])
 
       animationFrameId.current = requestAnimationFrame(animate)
     }
@@ -312,6 +321,10 @@ function App() {
     }
   }, [])
 
+  // Sesuaikan durasi dan frekuensi lightning berdasarkan ukuran layar
+  const lightningDuration = window.innerWidth > 800 ? 180 : 150;  // Durasi lebih lama
+  const lightningFrequency = window.innerWidth > 800 ? 0.12 : 0.15;  // Frekuensi lebih tinggi
+
   return (
     <div className="relative min-h-screen bg-black flex flex-col items-center justify-center overflow-hidden">
       {/* Noise effect as background */}
@@ -327,6 +340,16 @@ function App() {
           ref={canvasRef}
           className="absolute inset-0 w-full h-full cursor-none bg-black"
         />
+        
+        {/* Lightning manager */}
+        {currentParticles.length > 0 && (
+          <LightningManager
+            particles={currentParticles}
+            connectionDistance={connectionDistance}
+            lightningDuration={lightningDuration}
+            lightningFrequency={lightningFrequency}
+          />
+        )}
       </div>
       
       {/* Title - increased z-index to make it appear above canvas */}
